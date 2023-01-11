@@ -1,3 +1,13 @@
+let playerState = 'idle';
+const dropdown = document.getElementById('animations');
+// dropdown - corresponds to animations dropdown in HTML file
+// addEventListener('change',function(e))-listens for any change event
+// e - event object 
+dropdown.addEventListener('change', 
+function(e){ //callback function
+    // every time value changes we change playerState to that value
+    playerState = e.target.value; //value corresponds to value of option in HTML
+})
 const canvas=document.getElementById('canvas1');
 // reference to our original canvas in the HTML
 const ctx = canvas.getContext('2d');
@@ -32,6 +42,38 @@ const animationStates = [
     {
         name: 'jump',
         frames: 7,
+    },
+    {
+        name: 'fall',
+        frames: 7,
+    },
+    {
+        name: 'run',
+        frames: 9,
+    },
+    {
+        name: 'dizzy',
+        frames: 11,
+    },
+    {
+        name: 'sit',
+        frames: 5,
+    },
+    {
+        name: 'roll',
+        frames: 7,
+    },
+    {
+        name: 'bite',
+        frames: 7,
+    },
+    {
+        name: 'ko',
+        frames: 12,
+    },
+    {
+        name: 'getHit',
+        frames: 4,
     }
 ];
 //state- represents each element as we are cycling through the array
@@ -52,10 +94,10 @@ animationStates.forEach((state, index)=> {
 
 function animate(){
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    let position = Math.floor(gameFrame/staggerFrames) % spriteAnimations['idle'].loc.length; //cycle through positions in frame horizontally
+    let position = Math.floor(gameFrame/staggerFrames) % spriteAnimations[playerState].loc.length; //cycle through positions in frame horizontally
     // Math.floor(gameFrame/staggerFrames) % "noOfFrames" in each row
     let frameX = spriteWidth * position;
-    let frameY = spriteAnimations['idle'].loc[position].y;
+    let frameY = spriteAnimations[playerState].loc[position].y;
     // clearRect()- what area on canvas we want to clear
     // entire canvas- (0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
     // ctx.fillRect(100,50,100,100);
