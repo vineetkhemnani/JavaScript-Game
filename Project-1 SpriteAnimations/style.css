@@ -1,0 +1,26 @@
+#canvas1 {
+    /* background-color: aqua; */
+    /* border: 5px solid black; */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* transform: translate(left,top) */
+    transform: translate(-50%, -50%);
+    /* 
+    centering the container without using margins
+    if we dont know height and width of the container
+    */
+    width: 600px;
+    height: 600px;
+}
+.controls {
+    position: absolute;
+    z-index: 10;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    /* ordering the controls box horizontally */
+}
+.controls, select, option {
+    font-size: 20px;
+}
