@@ -1,1 +1,1 @@
-# JavaScript-Game
+# SpriteAnimations
