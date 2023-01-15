@@ -4,7 +4,7 @@ const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
 const CANVAS_WIDTH = canvas.width = 500;
 const CANVAS_HEIGHT = canvas.height = 1000;
-const noOfEnemies = 20;
+const noOfEnemies = 200;
 const enemiesArray = [];
 
 // const enemyImage = new Image();
@@ -31,11 +31,18 @@ class Enemy {
         this.y = Math.random() * (canvas.height - this.height); //random y co-ord b/w y and canvas.height for spawn enemy
         this.frame = 0; //cycle frames horizontally
         this.flapSpeed = Math.floor(Math.random() * 3 + 1); // random b/w 1 & 4
-       
+        this.angle = Math.random() * 500; // angle of sine wave
+        this.angleSpeed = Math.random() * 0.5 + 0.5; //how fast the angle increases
+        // this.curve = Math.random() * 200 + 50; // prominence of movement/depth of movement
     }
     update(){
-        // this.x = 0;
-        // this.y = 0;
+        this.x = canvas.width/2 * Math.sin(this.angle * Math.PI/90) + (canvas.width/2 - this.width/2); // enemies oscillate
+        // this.x = this.curve * Math.sin(this.angle * Math.PI/180) + (canvas.width/2 - this.width/2); // enemies oscillate
+        // characters cycle b/w -200 and +200 when this.curve is used
+        this.y =  canvas.height/2 * Math.cos(this.angle * Math.PI/270) + (canvas.height/2 - this.height/2); // enemies oscillate; 
+        // cosine wave movement along y-axis(values b/w 0 & 1)
+        this.angle += this.angleSpeed;
+        // x and y compliment each other forming a circle with this.curve as radius
         if(this.x + this.width < 0) this.x = canvas.width;
         // if(x + widthofObject < 0)-> object disappears place it at right corner of canvas
         // animate sprites
