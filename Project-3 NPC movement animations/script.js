@@ -4,38 +4,43 @@ const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
 const CANVAS_WIDTH = canvas.width = 500;
 const CANVAS_HEIGHT = canvas.height = 1000;
-const noOfEnemies = 20;
+const noOfEnemies = 6;
 const enemiesArray = [];
 
 // const enemyImage = new Image();
 // enemyImage.src = './enemies/enemy1.png';
 let gameFrame = 0;
 
-// enemy1 = {
-//     x: 10,
-//     y: 50,
-//     width: 100,
-//     height: 100,
-// }
-
 class Enemy {
     constructor(){
         this.image = new Image();
-        this.image.src = './enemies/enemy3.png'
+        this.image.src = './enemies/enemy4.png'
         this.speed = Math.random() * 4 + 1; //  speed b/w -2 and 2
-        this.spriteWidth = 218;
-        this.spriteHeight = 177;
+        this.spriteWidth = 213;
+        this.spriteHeight = 213;
         this.width = this.spriteWidth / 2.5; //width of enemy
         this.height = this.spriteHeight / 2.5; //height of enemy
         this.x = Math.random() * (canvas.width - this.width); //random x co-ord b/w x and canvas.width for spawn enemy
         this.y = Math.random() * (canvas.height - this.height); //random y co-ord b/w y and canvas.height for spawn enemy
+        this.newX = Math.random() * (canvas.width - this.width); //random x co-ord b/w x and canvas.width for spawn enemy
+        this.newY = Math.random() * (canvas.height - this.height); //random y co-ord b/w y and canvas.height for spawn enemy
         this.frame = 0; //cycle frames horizontally
         this.flapSpeed = Math.floor(Math.random() * 3 + 1); // random b/w 1 & 4
-       
+        this.interval = Math.floor(Math.random() * 200 + 50);
+        //each character resets at a random interval
+        // wrapped in Math.floor to take only integer values as gameFrame also integer
     }
     update(){
-        // this.x = 0;
-        // this.y = 0;
+        if(gameFrame % this.interval === 0){
+            //every 30 frames
+            this.newX = Math.random() * (canvas.width - this.width);
+            this.newY = Math.random() * (canvas.height - this.height); 
+        }
+        let dx = this.x - this.newX; // distance on x axis b/w x and newX
+        let dy = this.y - this.newY; // distance on y axis b/w y and newY
+        this.x -= dx/70;
+        this.y -= dy/70;
+
         if(this.x + this.width < 0) this.x = canvas.width;
         // if(x + widthofObject < 0)-> object disappears place it at right corner of canvas
         // animate sprites
