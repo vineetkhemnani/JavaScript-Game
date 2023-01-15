@@ -21,10 +21,10 @@ let gameFrame = 0;
 class Enemy {
     constructor(){
         this.image = new Image();
-        this.image.src = './enemies/enemy3.png'
+        this.image.src = './enemies/enemy2.png'
         this.speed = Math.random() * 4 + 1; //  speed b/w -2 and 2
-        this.spriteWidth = 218;
-        this.spriteHeight = 177;
+        this.spriteWidth = 266;
+        this.spriteHeight = 188;
         this.width = this.spriteWidth / 2.5;
         this.height = this.spriteHeight / 2.5;
         this.x = Math.random() * (canvas.width - this.width); //random x co-ord b/w x and canvas.width for spawn enemy
@@ -37,7 +37,7 @@ class Enemy {
     }
     update(){
         this.x-= this.speed; // enemy move towards left
-        // this.y+= this.curve * Math.sin(this.angle); // sine wave movement along y-axis(values b/w 0 & 1)
+        this.y+= this.curve * Math.sin(this.angle); // sine wave movement along y-axis(values b/w 0 & 1)
         this.angle += this.angleSpeed;
         // this.x += Math.random() * 15 - 7.5; // wiggle motion x-axis
         // this.y += Math.random() * 10 - 5; // wiggle motion y-axis
