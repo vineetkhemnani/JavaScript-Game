@@ -3,10 +3,12 @@ const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+let score = 0; // maintain score
 
 let timeToNextRaven = 0; // accumulate milisecond values b/w frames until its reaches interval value and trigger next frame
 let ravenInterval = 500; // value in ms,time at which next raven is triggered using timeToNextRaven
 let lastTime = 0; // hold value of timeStamp from the previous loop
+
 let ravens =[];
 class Raven {
     constructor(){
@@ -14,7 +16,7 @@ class Raven {
         this.image.src = './images/raven.png';
         this.spriteWidth = 271;
         this.spriteHeight = 194;
-        this.sizeModifier = Math.random() * 0.6 + 0.4; // modify size of ravens
+        this.sizeModifier = Math.random() * 0.5 + 0.4; // modify size of ravens
         this.width = this.spriteWidth * this.sizeModifier;
         this.height = this.spriteHeight * this.sizeModifier;
         this.x = canvas.width;
@@ -34,7 +36,7 @@ class Raven {
         }
         this.x -= this.directionX;
         this.y += this.directionY;
-        if (this.x < this.width) this.markedForDeletion = true;
+        if (this.x < 0.1 * this.width) this.markedForDeletion = true;
         this.timeSinceFlap += deltaTime;
         if (this.timeSinceFlap > this.flapInterval){
             if (this.frame > this.maxFrame) this.frame = 0;
@@ -75,7 +77,7 @@ function animate(timestamp){
     [...ravens].forEach(object=> object.update(deltaTime)); // cycle through ravens array and call update method on each of them
     [...ravens].forEach(object=> object.draw());
     ravens = ravens.filter(object=> !object.markedForDeletion);
-    console.log(ravens);
+    // console.log(ravens);
     requestAnimationFrame(animate); //animate becomes a callback function with an automatic timestamp if we dont assign one
 }
 animate(0); // pass 0 as an arguement else it starts timestamp as undefined for first loop
