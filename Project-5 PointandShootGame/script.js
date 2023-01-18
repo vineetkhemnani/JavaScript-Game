@@ -19,7 +19,7 @@ let ravens =[];
 class Raven {
     constructor(){
         this.image = new Image();
-        this.image.src = './images/raven.png';
+        this.image.src = './media/raven.png';
         this.spriteWidth = 271;
         this.spriteHeight = 194;
         this.sizeModifier = Math.random() * 0.5 + 0.4; // modify size of ravens
@@ -60,6 +60,37 @@ class Raven {
     }
 }
 
+let explosions = [];
+class Explosion {
+    constructor(x, y, size){
+        this.image = new Image();
+        this.image.src = './media/boom.png';
+        this.spriteWidth = 200;
+        this.spriteHeight = 179;
+        this.size = size;
+        this.x = x;
+        this.y = y;
+        this.frame = 0;
+        this.sound = new Audio();
+        this.sound.src = './media/boom.wav';
+        this.timeSinceLastFrame = 0; // accumulate deltaTime
+        this.frameInterval = 200; // when next frame triggers
+        this.markedForDeletion = false;
+    }
+    update(deltaTime){
+        if (this.frame === 0) this.sound.play();
+        this.timeSinceLastFrame += deltaTime;
+        if (this.timeSinceLastFrame > this.frameInterval) {
+            this.frame++;
+            if (this.frame > 5) this.markedForDeletion = true;
+        }
+    }
+    draw(){
+        ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, 
+            this.x, this.y, this.size, this.size);
+    }
+}
+
 function drawScore(){
     ctx.fillStyle = 'black';
     ctx.fillText('Score: ' + score, 50, 75);
@@ -71,15 +102,18 @@ window.addEventListener('click', function(e){
     console.log(e.x, e.y);
     const detectPixelColor = collisionCtx.getImageData(e.x, e.y, 1, 1); // getImageData(x,y,width,height)
     //returns an array like object called Uint8ClampedArray(data structure full of unasigned 8-bit integers)
-    console.log(detectPixelColor);
+    // console.log(detectPixelColor);
     // Uint8Clamped(data)->(red, green, blue, alpha/opacity)
     // canvas only has ravens rest is transparent, rgb due to CSS body
     // compare rgb values on collisionCanvas rectangles with randomColors and markedforDeletion = true;
     const pc = detectPixelColor.data; // refers to the Uint8Clamped array , pc-> pixelcolor
     ravens.forEach(object=> {
         if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
+            // collision detected
             object.markedForDeletion = true;
             score++;
+            explosions.push(new Explosion(object.x, object.y, object.width));
+            // console.log(explosions);
         }
     })
 });
@@ -110,9 +144,10 @@ function animate(timestamp){
     drawScore();
     // array literal-[...name], ...name->spread operator 
     // create new array and add it to ravens array
-    [...ravens].forEach(object=> object.update(deltaTime)); // cycle through ravens array and call update method on each of them
-    [...ravens].forEach(object=> object.draw());
+    [...ravens, ...explosions].forEach(object=> object.update(deltaTime)); // cycle through ravens array and call update method on each of them
+    [...ravens, ...explosions].forEach(object=> object.draw());
     ravens = ravens.filter(object=> !object.markedForDeletion);
+    explosions = explosions.filter(object=> !object.markedForDeletion);
     // console.log(ravens);
     requestAnimationFrame(animate); //animate becomes a callback function with an automatic timestamp if we dont assign one
 }
