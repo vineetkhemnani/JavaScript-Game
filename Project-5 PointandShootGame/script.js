@@ -3,8 +3,10 @@ const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-const colllisionCanvas = document.getElementById('collisionCanvas');
+const collisionCanvas = document.getElementById('collisionCanvas');
 const collisionCtx = collisionCanvas.getContext('2d');
+collisionCanvas.width = window.innerWidth;
+collisionCanvas.height = window.innerHeight;
 
 let score = 0; // maintain score
 ctx.font = '50px Impact';
@@ -50,13 +52,10 @@ class Raven {
             else this.frame++;
             this.timeSinceFlap = 0;
         }
-
-        
-
     }
     draw(){
-        ctx.fillStyle = this.color; // random color filled
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        collisionCtx.fillStyle = this.color; // random color filled
+        collisionCtx.fillRect(this.x, this.y, this.width, this.height);
         ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
     }
 }
@@ -70,11 +69,19 @@ function drawScore(){
 
 window.addEventListener('click', function(e){
     console.log(e.x, e.y);
-    const detectPixelColor = ctx.getImageData(e.x, e.y, 1, 1); // getImageData(x,y,width,height)
+    const detectPixelColor = collisionCtx.getImageData(e.x, e.y, 1, 1); // getImageData(x,y,width,height)
     //returns an array like object called Uint8ClampedArray(data structure full of unasigned 8-bit integers)
     console.log(detectPixelColor);
     // Uint8Clamped(data)->(red, green, blue, alpha/opacity)
     // canvas only has ravens rest is transparent, rgb due to CSS body
+    // compare rgb values on collisionCanvas rectangles with randomColors and markedforDeletion = true;
+    const pc = detectPixelColor.data; // refers to the Uint8Clamped array , pc-> pixelcolor
+    ravens.forEach(object=> {
+        if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
+            object.markedForDeletion = true;
+            score++;
+        }
+    })
 });
 
 // const raven = new Raven();
@@ -84,6 +91,7 @@ window.addEventListener('click', function(e){
 // to make sure the timings are based on miliseconds and not on power of computer we use timestamps
 function animate(timestamp){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    collisionCtx.clearRect(0, 0, collisionCanvas.width, collisionCanvas.height);
     // raven.update();
     // raven.draw();
     // console.log('test'); // test animation loop running on console
@@ -95,6 +103,9 @@ function animate(timestamp){
         ravens.push(new Raven());
         timeToNextRaven = 0;
         // console.log(ravens);
+        ravens.sort(function(a,b){
+            a.width - b.width;
+        })
     };
     drawScore();
     // array literal-[...name], ...name->spread operator 

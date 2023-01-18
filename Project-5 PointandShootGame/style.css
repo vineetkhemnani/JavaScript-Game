@@ -1,6 +1,6 @@
 body {
-    margin: 0;
-    /* background: linear-gradient(to bottom, red, green, blue); */
+    /* margin: 0; */
+    background: linear-gradient(to bottom, red, green, blue);
     width: 100vw;
     height: 100vh;
     overflow: hidden;
@@ -17,4 +17,5 @@ canvas {
 
 #collisionCanvas {
     /* background: red; */
+    opacity: 0;
 }
