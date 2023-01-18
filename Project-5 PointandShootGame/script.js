@@ -9,6 +9,7 @@ collisionCanvas.width = window.innerWidth;
 collisionCanvas.height = window.innerHeight;
 
 let score = 0; // maintain score
+let gameOver = false;
 ctx.font = '50px Impact';
 
 let timeToNextRaven = 0; // accumulate milisecond values b/w frames until its reaches interval value and trigger next frame
@@ -45,13 +46,14 @@ class Raven {
         }
         this.x -= this.directionX;
         this.y += this.directionY;
-        if (this.x < 0.1 * this.width) this.markedForDeletion = true;
+        if (this.x < 0 - this.width) this.markedForDeletion = true;
         this.timeSinceFlap += deltaTime;
         if (this.timeSinceFlap > this.flapInterval){
             if (this.frame > this.maxFrame) this.frame = 0;
             else this.frame++;
             this.timeSinceFlap = 0;
         }
+        if (this.x < 0 - this.width) gameOver = true;
     }
     draw(){
         collisionCtx.fillStyle = this.color; // random color filled
@@ -86,8 +88,7 @@ class Explosion {
         }
     }
     draw(){
-        ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, 
-            this.x, this.y - this.size/4, this.size, this.size);
+        ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y - this.size/4, this.size, this.size);
     }
 }
 
@@ -96,6 +97,14 @@ function drawScore(){
     ctx.fillText('Score: ' + score, 50, 75);
     ctx.fillStyle = 'white';
     ctx.fillText('Score: ' + score, 53, 80); //two fillstyle for shadow effect
+}
+
+function drawGameOver(){
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'black';
+    ctx.fillText('GAME OVER, your score is ' + score, canvas.width/2, canvas.height/2);
+    ctx.fillStyle = 'white';
+    ctx.fillText('GAME OVER, your score is ' + score, canvas.width/2+5, canvas.height/2+5);
 }
 
 window.addEventListener('click', function(e){
@@ -139,7 +148,7 @@ function animate(timestamp){
         // console.log(ravens);
         ravens.sort(function(a,b){
             a.width - b.width;
-        })
+        });
     };
     drawScore();
     // array literal-[...name], ...name->spread operator 
@@ -149,6 +158,7 @@ function animate(timestamp){
     ravens = ravens.filter(object=> !object.markedForDeletion);
     explosions = explosions.filter(object=> !object.markedForDeletion);
     // console.log(ravens);
-    requestAnimationFrame(animate); //animate becomes a callback function with an automatic timestamp if we dont assign one
+    if (!gameOver) requestAnimationFrame(animate);
+    else drawGameOver();
 }
 animate(0); // pass 0 as an arguement else it starts timestamp as undefined for first loop
