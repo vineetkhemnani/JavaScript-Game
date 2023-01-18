@@ -1,84 +1,164 @@
 /** @type {HTMLCanvasElement} */ 
-// Collision b/w rectangles that are axis- aliant
-//  It only compares X and Y co-ordinates and width and height of two rectangles if they overlap there is a collision
 const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
-canvas.width = 500;
-canvas.height = 600; // 700
-const explosions = [];
-let canvasPosition = canvas.getBoundingClientRect();
-// returns an object providing information about the size of an element and its position relative to position
-// console.log(canvasPosition);
-// ctx.fillStyle = 'white';
-// ctx.fillRect(50, 50, 100, 150);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const collisionCanvas = document.getElementById('collisionCanvas');
+const collisionCtx = collisionCanvas.getContext('2d');
+collisionCanvas.width = window.innerWidth;
+collisionCanvas.height = window.innerHeight;
 
-class Explosion {
-    constructor(x,y){
-        this.spriteWidth = 200; // width of each frame
-        this.spriteHeight = 179; // height of each frame
-        this.width = this.spriteWidth * 0.7; // width of object displayed
-        this.height = this.spriteHeight * 0.7; // height of object displayed
-        this.x = x;
-        this.y = y;
+let score = 0; // maintain score
+let gameOver = false;
+ctx.font = '50px Impact';
+
+let timeToNextRaven = 0; // accumulate milisecond values b/w frames until its reaches interval value and trigger next frame
+let ravenInterval = 500; // value in ms,time at which next raven is triggered using timeToNextRaven
+let lastTime = 0; // hold value of timeStamp from the previous loop
+
+let ravens =[];
+class Raven {
+    constructor(){
         this.image = new Image();
-        this.image.src = './collision/boom.png';
+        this.image.src = './media/raven.png';
+        this.spriteWidth = 271;
+        this.spriteHeight = 194;
+        this.sizeModifier = Math.random() * 0.5 + 0.4; // modify size of ravens
+        this.width = this.spriteWidth * this.sizeModifier;
+        this.height = this.spriteHeight * this.sizeModifier;
+        this.x = canvas.width;
+        this.y = Math.random() * (canvas.height - this.height); // -this.height to prevent half hidden ravens
+        this.directionX = Math.random() * 5 + 3;
+        this.directionY = Math.random() * 5 - 2.5; // random number b/w 5 and -2.5
+        // -ve values above and +ve below for y-direction
+        this.markedForDeletion = false; //deleting passed ravens
         this.frame = 0;
-        this.timer = 0;
-        this.angle = Math.random() * 6.2;  // 360degrees = 6.2 radians
-        this.sound = new Audio();
-        this.sound.src = './collision/boom.wav'
+        this.maxFrame = 4;
+        this.timeSinceFlap = 0;
+        this.flapInterval = Math.random() * 50 + 50; //adjust cycling of frames speed
+        this.randomColors = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)];
+        // select random rgb color
+        this.color = 'rgb(' + this.randomColors[0] + ',' + this.randomColors[1] + ',' + this.randomColors[2] + ')';
     }
-    update(){
-        if (this.frame === 0) this.sound.play();
-        this.timer++;
-        if (this.timer % 10 === 0){
-            this.frame++;
+    update(deltaTime){
+        if (this.y < 0 || this.y > canvas.height - this.height){
+            this.directionY = this.directionY * -1;
         }
-        // increase frame every 10 frames-> manage speed of animation
+        this.x -= this.directionX;
+        this.y += this.directionY;
+        if (this.x < 0 - this.width) this.markedForDeletion = true;
+        this.timeSinceFlap += deltaTime;
+        if (this.timeSinceFlap > this.flapInterval){
+            if (this.frame > this.maxFrame) this.frame = 0;
+            else this.frame++;
+            this.timeSinceFlap = 0;
+        }
+        if (this.x < 0 - this.width) gameOver = true;
     }
     draw(){
-        ctx.save();
-        ctx.translate(this.x, this.y); // set rotation center point
-        ctx.rotate(this.angle);
-        // ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
-        // ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
-        ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, 0 - this.width/2, 0 - this.height/2, this.width, this.height);// already translated to x,y
-        ctx.restore();
+        collisionCtx.fillStyle = this.color; // random color filled
+        collisionCtx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
     }
+}
+
+let explosions = [];
+class Explosion {
+    constructor(x, y, size){
+        this.image = new Image();
+        this.image.src = './media/boom.png';
+        this.spriteWidth = 200;
+        this.spriteHeight = 179;
+        this.size = size;
+        this.x = x;
+        this.y = y;
+        this.frame = 0;
+        this.sound = new Audio();
+        this.sound.src = './media/boom.wav';
+        this.timeSinceLastFrame = 0; // accumulate deltaTime
+        this.frameInterval = 200; // when next frame triggers
+        this.markedForDeletion = false;
+    }
+    update(deltaTime){
+        if (this.frame === 0) this.sound.play();
+        this.timeSinceLastFrame += deltaTime;
+        if (this.timeSinceLastFrame > this.frameInterval) {
+            this.frame++;
+            if (this.frame > 5) this.markedForDeletion = true;
+        }
+    }
+    draw(){
+        ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y - this.size/4, this.size, this.size);
+    }
+}
+
+function drawScore(){
+    ctx.fillStyle = 'black';
+    ctx.fillText('Score: ' + score, 50, 75);
+    ctx.fillStyle = 'white';
+    ctx.fillText('Score: ' + score, 53, 80); //two fillstyle for shadow effect
+}
+
+function drawGameOver(){
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'black';
+    ctx.fillText('GAME OVER, your score is ' + score, canvas.width/2, canvas.height/2);
+    ctx.fillStyle = 'white';
+    ctx.fillText('GAME OVER, your score is ' + score, canvas.width/2+5, canvas.height/2+5);
 }
 
 window.addEventListener('click', function(e){
-    // console.log(e);
-    // ctx.fillRect(x, y, width, height);
-    // let positionX = e.x - canvasPosition.left;
-    // let positionY = e.y - canvasPosition.top;
-    // ctx.fillStyle = 'white';
-    // ctx.fillRect( e.x - canvasPosition.left - 25, e.y - canvasPosition.top - 25, 50, 50);
-    // offset e.x and e.y by top and left margin between viewport and canvas
-    createAnimation(e);
+    console.log(e.x, e.y);
+    const detectPixelColor = collisionCtx.getImageData(e.x, e.y, 1, 1); // getImageData(x,y,width,height)
+    //returns an array like object called Uint8ClampedArray(data structure full of unasigned 8-bit integers)
+    // console.log(detectPixelColor);
+    // Uint8Clamped(data)->(red, green, blue, alpha/opacity)
+    // canvas only has ravens rest is transparent, rgb due to CSS body
+    // compare rgb values on collisionCanvas rectangles with randomColors and markedforDeletion = true;
+    const pc = detectPixelColor.data; // refers to the Uint8Clamped array , pc-> pixelcolor
+    ravens.forEach(object=> {
+        if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
+            // collision detected
+            object.markedForDeletion = true;
+            score++;
+            explosions.push(new Explosion(object.x, object.y, object.width));
+            // console.log(explosions);
+        }
+    })
 });
 
-// window.addEventListener('mousemove', function(e){
-//     console.log(e);
-//     createAnimation(e);
-// });
+// const raven = new Raven();
 
-
-function createAnimation(e){
-    let positionX = e.x - canvasPosition.left;
-    let positionY = e.y - canvasPosition.top;
-    explosions.push(new Explosion(positionX,positionY));
-}
-function animate(){
+// we need to create a new raven periodically and that periodic event is triggered on very old slow computers
+// as well as fast modern computers at the same time
+// to make sure the timings are based on miliseconds and not on power of computer we use timestamps
+function animate(timestamp){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < explosions.length; i++){
-        explosions[i].update();
-        explosions[i].draw();
-        if (explosions[i].frame > 5){
-            explosions.splice(i, 1);
-            i--; //make sure next object is correctly animated after its neighbor removed,adjust index
-        }
-    }
-    requestAnimationFrame(animate);
+    collisionCtx.clearRect(0, 0, collisionCanvas.width, collisionCanvas.height);
+    // raven.update();
+    // raven.draw();
+    // console.log('test'); // test animation loop running on console
+    let deltaTime = timestamp - lastTime; // value b/w timestamp of this loop and holded timestamp value of previous loop
+    lastTime = timestamp;
+    timeToNextRaven += deltaTime;
+    // console.log(deltaTime);
+    if (timeToNextRaven > ravenInterval){
+        ravens.push(new Raven());
+        timeToNextRaven = 0;
+        // console.log(ravens);
+        ravens.sort(function(a,b){
+            a.width - b.width;
+        });
+    };
+    drawScore();
+    // array literal-[...name], ...name->spread operator 
+    // create new array and add it to ravens array
+    [...ravens, ...explosions].forEach(object=> object.update(deltaTime)); // cycle through ravens array and call update method on each of them
+    [...ravens, ...explosions].forEach(object=> object.draw());
+    ravens = ravens.filter(object=> !object.markedForDeletion);
+    explosions = explosions.filter(object=> !object.markedForDeletion);
+    // console.log(ravens);
+    if (!gameOver) requestAnimationFrame(animate);
+    else drawGameOver();
 }
-animate();
+animate(0); // pass 0 as an arguement else it starts timestamp as undefined for first loop
