@@ -13,7 +13,7 @@ let gameOver = false;
 ctx.font = '50px Impact';
 
 let timeToNextRaven = 0; // accumulate milisecond values b/w frames until its reaches interval value and trigger next frame
-let ravenInterval = 500; // value in ms,time at which next raven is triggered using timeToNextRaven
+let ravenInterval = 1000; // value in ms,time at which next raven is triggered using timeToNextRaven
 let lastTime = 0; // hold value of timeStamp from the previous loop
 
 let ravens =[];
@@ -39,6 +39,7 @@ class Raven {
         this.randomColors = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)];
         // select random rgb color
         this.color = 'rgb(' + this.randomColors[0] + ',' + this.randomColors[1] + ',' + this.randomColors[2] + ')';
+        this.hasTrail = Math.random() > 0.5; // true for roughly 50% of ravens
     }
     update(deltaTime){
         if (this.y < 0 || this.y > canvas.height - this.height){
@@ -52,6 +53,11 @@ class Raven {
             if (this.frame > this.maxFrame) this.frame = 0;
             else this.frame++;
             this.timeSinceFlap = 0;
+            if(this.hasTrail){ // creating particle trail
+                for (let i = 0; i < 5; i++){
+                    particles.push(new Particle(this.x, this.y, this.width, this.color));
+                }
+            }
         }
         if (this.x < 0 - this.width) gameOver = true;
     }
@@ -89,6 +95,36 @@ class Explosion {
     }
     draw(){
         ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y - this.size/4, this.size, this.size);
+    }
+}
+
+let particles = [];
+class Particle {
+    constructor(x,y, size,color){
+        this.size = size;
+        this.x = x + this.size/2 + Math.random() * 50 - 25;
+        this.y = y + this.size/3 + Math.random() * 50 - 25;
+        this.radius = Math.random() * this.size/10;
+        this.maxRadius = Math.random() * 20 + 35;
+        this.markedForDeletion = false;
+        this.speedX = Math.random() * 1 + 0.5;
+        this.color  = color;
+    }
+    update(){
+        this.x += this.speedX;
+        this.radius += 0.3; // radius grows slower so longer trail
+        if (this.radius > this.maxRadius - 5) this.markedForDeletion = true;
+    }
+    draw(){
+        ctx.save();
+        ctx.globalAlpha = 1 - this.radius/this.maxRadius; // globalAlpha affects entire canvas so wrap it in save/restore
+        // as particle radius grows, eventually radius = maxRadius and globalAlpha becomes 0
+        ctx.beginPath();
+        ctx.fillStyle = this.color;
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        // drawing circles for particle effect
+        ctx.restore();
     }
 }
 
@@ -153,10 +189,13 @@ function animate(timestamp){
     drawScore();
     // array literal-[...name], ...name->spread operator 
     // create new array and add it to ravens array
-    [...ravens, ...explosions].forEach(object=> object.update(deltaTime)); // cycle through ravens array and call update method on each of them
-    [...ravens, ...explosions].forEach(object=> object.draw());
+    [...particles, ...ravens, ...explosions].forEach(object=> object.update(deltaTime)); // cycle through ravens array and call update method on each of them
+    [...particles, ...ravens, ...explosions].forEach(object=> object.draw());
+    // particles added through spread operator first due to layering effect on canvas
+    // particles behind ravens, ravens on top of particles, explosions on top of ravens
     ravens = ravens.filter(object=> !object.markedForDeletion);
     explosions = explosions.filter(object=> !object.markedForDeletion);
+    particles = particles.filter(object=> !object.markedForDeletion);
     // console.log(ravens);
     if (!gameOver) requestAnimationFrame(animate);
     else drawGameOver();
