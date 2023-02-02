@@ -51,17 +51,28 @@ class Enemy {
         this.game = game;
         // console.log(game); 
         this.markedForDeletion = false;
-
+        this.frameX = 0; //cycle between 0 to 5 to show which spritesheet frame to show
+        this.maxFrame = 5; //total frames in each spritesheet (count from zero)
+        this.frameInterval = 100; // time after which frame changes
+        this.frameTimer = 0; // accumulates deltaTime enough to reach frameInterval
     }
     update(deltaTime){ //updating enemies
         this.x-= this.vx * deltaTime;
         // remove enemies
         if(this.x < 0 - this.width) this.markedForDeletion = true;
+        // animate frames
+        if (this.frameTimer > this.frameInterval) {
+            if (this.frameX < this.maxFrame) this.frameX++;
+            else this.frameX = 0;
+            this.frameTimer = 0;
+        }else{
+            this.frameTimer += deltaTime;
+        }
     }
     draw(ctx){
         // ctx in draw method calls the Game class ctx to work on
         // ctx.fillRect(this.x, this.y, this.width, this.height);
-        ctx.drawImage(this.image, 0, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.image, this.frameX * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
     }
 }
 
@@ -102,7 +113,7 @@ class Ghost extends Enemy {
         this.y += Math.sin(this.angle) * this.curve;
         this.angle+=0.04;
     }
-    draw(){
+    draw(ctx){
         ctx.save();
         ctx.globalAlpha = 0.7; // change opacity for ghosts
         super.draw(ctx); // super.draw() -> enemy.draw() basically
@@ -128,8 +139,16 @@ class Spider extends Enemy {
     }
     update(deltaTime){
         super.update(deltaTime); 
+        if(this.y < 0 - this.height) this.markedForDeletion = true;
         this.y += this.vy * deltaTime;
         if(this.y > this.maxLength) this.vy *= -1;
+    }
+    draw(ctx){
+        ctx.beginPath(); //starting spider web
+        ctx.moveTo(this.x + this.width/2, 0); //starting co ordinates of spider-web
+        ctx.lineTo(this.x + this.width/2, this.y + 10); 
+        ctx.stroke();
+        super.draw(ctx);
     }
 }
 
