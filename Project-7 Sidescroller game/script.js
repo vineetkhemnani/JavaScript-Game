@@ -54,7 +54,7 @@ window.addEventListener('load', function(){
         }
         draw(context){
             context.fillStyle= 'white';
-            context.fillRect(this.x, this.y, this.width, this.height);
+            // context.fillRect(this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
         }
         update(input){
@@ -121,18 +121,35 @@ window.addEventListener('load', function(){
             this.x = this.gameWidth;
             this.y = this.gameHeight - this.height;
             this.frameX = 0;
+            this.maxFrame = 5;
+            this.fps = 20; // how fast we cycle frames in the spriteSheet
+            this.frameTimer = 0;
+            this.frameInterval = 1000/this.fps; // time till each frame lasts
+            this.speed = 8;
 
         }
         draw(context){
-            context.drawImage(this.image, 0 * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+            context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
         }
-        update(){
-            this.x--;
+        update(deltaTime){
+            if(this.frameX >= this.maxFrame) this.frameX = 0;
+            else this.frameX++;
+            this.x -= this.speed;
         }
     }
 
-    function handleEnemies(){
-
+    function handleEnemies(deltaTime){
+        if (enemyTimer > enemyInterval + randomEnemyInterval){
+            enemies.push(new Enemy(canvas.width, canvas.height));
+            let randomEnemyInterval = Math.random() * 1000 + 500;
+            enemyTimer = 0;
+        } else {
+            enemyTimer += deltaTime;
+        }
+        enemies.forEach(enemy => {
+            enemy.draw(ctx);
+            enemy.update(deltaTime);
+        })
     }
 
     function displayStatusText() {
@@ -142,9 +159,16 @@ window.addEventListener('load', function(){
     const input = new InputHandler();
     const player = new Player(canvas.width, canvas.height);
     const background = new Background(canvas.width, canvas.height);
-    const enemy1 = new Enemy(canvas.width, canvas.height);
+    // const enemy1 = new Enemy(canvas.width, canvas.height);
 
-    function animate(){
+    let lastTime = 0; //hold value of timeStamp from prev animation frame
+    let enemyTimer = 0; // reaches a limit triggers something and resets back to zero
+    let enemyInterval = 1000;
+    let randomEnemyInterval = Math.random() * 1000 + 500;
+
+    function animate(timeStamp){
+        const deltatTime = timeStamp - lastTime; // deltaTime= how many milliseconds our computer takes to serve one animation frame
+        lastTime = timeStamp;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         background.draw(ctx);
         // background.update();
@@ -152,8 +176,9 @@ window.addEventListener('load', function(){
         player.update(input);
         // enemy1.draw(ctx);
         // enemy1.update();
+        handleEnemies(deltatTime);
         requestAnimationFrame(animate);
         
     }
-    animate();
+    animate(0);
 });
