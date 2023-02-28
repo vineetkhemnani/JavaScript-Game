@@ -4,6 +4,7 @@ window.addEventListener('load', function(){
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     let enemies = [];
+    let score = 0;
 
     class InputHandler {
         // contain array of input key characters
@@ -157,7 +158,10 @@ window.addEventListener('load', function(){
                 this.frameTimer += deltaTime;
             }
             this.x -= this.speed;
-            if (this.x < 0 - this.width) this.markedForDeletion = true;
+            if (this.x < 0 - this.width) {
+                this.markedForDeletion = true;
+            score++;
+        }
         }
     }
 
@@ -174,11 +178,17 @@ window.addEventListener('load', function(){
             enemy.draw(ctx);
             enemy.update(deltaTime);
         });
-        enemies = enemies.filter(enemy => enemy.markedForDeletion = false)
+        enemies = enemies.filter(enemy => !enemy.markedForDeletion);
     }
 
-    function displayStatusText() {
-
+    function displayStatusText(context) {
+        context.fillStyle = 'black';
+        context.font = '40px Helvetica';
+        // fillText() - text we want to draw +x and y co-ordinates
+        context.fillText('Score: '+ score, 20, 50);
+        context.fillStyle = 'white';
+        context.font = '40px Helvetica';
+        context.fillText('Score: '+ score, 20, 52);
     }
 
     const input = new InputHandler();
@@ -202,6 +212,7 @@ window.addEventListener('load', function(){
         // enemy1.draw(ctx);
         // enemy1.update();
         handleEnemies(deltatTime);
+        displayStatusText(ctx);
         requestAnimationFrame(animate);
         
     }
