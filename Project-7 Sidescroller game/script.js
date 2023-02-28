@@ -59,18 +59,22 @@ window.addEventListener('load', function(){
             this.frameInterval = 1000/this.fps; // time till each frame lasts
         }
         draw(context){
-            context.strokeStyle='white';
-            context.strokeRect(this.x, this.y, this.width, this.height);
-            context.beginPath();
-            context.arc(this.x + this.width/2, this.y + this.width/2, this.width/2, 0, Math.PI * 2);
-            context.stroke();
+            // context.strokeStyle='white';
+            // context.strokeRect(this.x, this.y, this.width, this.height);
+            // context.beginPath();
+            // context.arc(this.x + this.width/2, this.y + this.width/2, this.width/2, 0, Math.PI * 2);
+            // context.stroke();
             context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+            // context.strokeStyle='blue';
+            // context.beginPath();
+            // context.arc(this.x, this.y, this.width/2, 0, Math.PI * 2);
+            // context.stroke();
         }
         update(input, deltaTime, enemies){
             // collision detection
             enemies.forEach(enemy => {
-                const dx = enemy.x - this.x;
-                const dy = enemy.y - this.y;
+                const dx = (enemy.x + enemy.width/2) - (this.x + this.width/2);
+                const dy = (enemy.y + enemy.height/2) - (this.y + this.height/2);
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < enemy.width/2 + this.width/2){
                     gameOver = true;
@@ -161,12 +165,17 @@ window.addEventListener('load', function(){
 
         }
         draw(context){
-            context.beginPath();
-            context.arc(this.x + this.width/2, this.y + this.width/2, this.width/2, 0, Math.PI * 2);
-            context.stroke();
-            context.strokeStyle='white';
-            context.strokeRect(this.x, this.y, this.width, this.height);
+            // context.strokeStyle='white';
+            // context.beginPath();
+            // context.arc(this.x + this.width/2, this.y + this.width/2, this.width/2, 0, Math.PI * 2);
+            // context.stroke();
+            // context.strokeRect(this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+            // we were not checking collision detection for white circles but for blue circles
+            // context.strokeStyle='blue';
+            // context.beginPath();
+            // context.arc(this.x, this.y, this.width/2, 0, Math.PI * 2);
+            // context.stroke();
         }
         update(deltaTime){
             if (this.frameTimer > this.frameInterval){
@@ -208,6 +217,15 @@ window.addEventListener('load', function(){
         context.fillStyle = 'white';
         context.font = '40px Helvetica';
         context.fillText('Score: '+ score, 20, 52);
+        if (gameOver){
+            context.textAlign = 'center';
+            context.fillStyle = 'black';
+            // context.font = '40px Helvetica';
+            context.fillText('GAME OVER, try again! ', canvas.width/2, canvas.height/2);
+            context.fillStyle = 'white';
+            // context.font = '40px Helvetica';
+            context.fillText('GAME OVER, try again! ', canvas.width/2 + 2, canvas.height/2);
+        }
     }
 
     const input = new InputHandler();
