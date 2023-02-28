@@ -5,6 +5,7 @@ window.addEventListener('load', function(){
     canvas.height = window.innerHeight;
     let enemies = [];
     let score = 0;
+    let gameOver = false;
 
     class InputHandler {
         // contain array of input key characters
@@ -58,11 +59,24 @@ window.addEventListener('load', function(){
             this.frameInterval = 1000/this.fps; // time till each frame lasts
         }
         draw(context){
-            // context.fillStyle= 'white';
-            // context.fillRect(this.x, this.y, this.width, this.height);
+            context.strokeStyle='white';
+            context.strokeRect(this.x, this.y, this.width, this.height);
+            context.beginPath();
+            context.arc(this.x + this.width/2, this.y + this.width/2, this.width/2, 0, Math.PI * 2);
+            context.stroke();
             context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
         }
-        update(input, deltaTime){
+        update(input, deltaTime, enemies){
+            // collision detection
+            enemies.forEach(enemy => {
+                const dx = enemy.x - this.x;
+                const dy = enemy.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < enemy.width/2 + this.width/2){
+                    gameOver = true;
+                }
+            });
+
             // animation
             if (this.frameTimer > this.frameInterval) {
                 if (this.frameX >= this.maxFrame) this.frameX = 0;
@@ -147,6 +161,11 @@ window.addEventListener('load', function(){
 
         }
         draw(context){
+            context.beginPath();
+            context.arc(this.x + this.width/2, this.y + this.width/2, this.width/2, 0, Math.PI * 2);
+            context.stroke();
+            context.strokeStyle='white';
+            context.strokeRect(this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
         }
         update(deltaTime){
@@ -208,12 +227,12 @@ window.addEventListener('load', function(){
         background.draw(ctx);
         // background.update();
         player.draw(ctx);
-        player.update(input, deltatTime);
+        player.update(input, deltatTime, enemies);
         // enemy1.draw(ctx);
         // enemy1.update();
         handleEnemies(deltatTime);
         displayStatusText(ctx);
-        requestAnimationFrame(animate);
+        if (!gameOver) requestAnimationFrame(animate);
         
     }
     animate(0);
