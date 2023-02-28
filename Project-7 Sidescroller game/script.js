@@ -47,27 +47,41 @@ window.addEventListener('load', function(){
             this.y = this.gameHeight - this.height;
             this.image = document.getElementById("playerImage");
             this.frameX = 0;
+            this.maxFrame = 8;
             this.frameY = 0;
             this.speed = 0; // horizontal speed modifier
             this.vy = 0;
             this.weight = 1;
+            this.fps = 20; // how fast we cycle frames in the spriteSheet
+            this.frameTimer = 0;
+            this.frameInterval = 1000/this.fps; // time till each frame lasts
         }
         draw(context){
-            context.fillStyle= 'white';
+            // context.fillStyle= 'white';
             // context.fillRect(this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
         }
-        update(input){
+        update(input, deltaTime){
+            // animation
+            if (this.frameTimer > this.frameInterval) {
+                if (this.frameX >= this.maxFrame) this.frameX = 0;
+                else this.frameX++;
+                this.frameTimer = 0;
+            } else {
+                this.frameTimer += deltaTime;
+            }
 
-           if (input.keys.indexOf('ArrowRight') > -1){
+
+        //  controls
+            if (input.keys.indexOf('ArrowRight') > -1){
             this.speed = 5;
-           } else if(input.keys.indexOf('ArrowLeft') > -1){
+            } else if(input.keys.indexOf('ArrowLeft') > -1){
             this.speed = -5;
-           } else if(input.keys.indexOf('ArrowUp') > -1 && this.onGround()){
+            } else if(input.keys.indexOf('ArrowUp') > -1 && this.onGround()){
             this.vy -= 32; // height of jump modifier
-           } else {
+            } else {
             this.speed = 0;
-           }
+            }
 
         // horizontal movement
         this.x+= this.speed;
@@ -77,9 +91,11 @@ window.addEventListener('load', function(){
         this.y += this.vy;
         if (!this.onGround()){
             this.vy += this.weight;
+            this.maxFrame = 6;
             this.frameY = 1;
         } else {
             this.vy = 0;
+            this.maxFrame = 8;
             this.frameY = 0;
         }
         if (this.y > this.gameHeight - this.height) this.y = this.gameHeight - this.height;
@@ -126,21 +142,29 @@ window.addEventListener('load', function(){
             this.frameTimer = 0;
             this.frameInterval = 1000/this.fps; // time till each frame lasts
             this.speed = 8;
+            this.markedForDeletion = false;
 
         }
         draw(context){
             context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
         }
         update(deltaTime){
-            if(this.frameX >= this.maxFrame) this.frameX = 0;
-            else this.frameX++;
+            if (this.frameTimer > this.frameInterval){
+                if (this.frameX >= this.maxFrame) this.frameX = 0;
+                else this.frameX++;
+                this.frameTimer = 0;
+            } else {
+                this.frameTimer += deltaTime;
+            }
             this.x -= this.speed;
+            if (this.x < 0 - this.width) this.markedForDeletion = true;
         }
     }
 
     function handleEnemies(deltaTime){
         if (enemyTimer > enemyInterval + randomEnemyInterval){
             enemies.push(new Enemy(canvas.width, canvas.height));
+            // console.log(enemies);
             let randomEnemyInterval = Math.random() * 1000 + 500;
             enemyTimer = 0;
         } else {
@@ -149,7 +173,8 @@ window.addEventListener('load', function(){
         enemies.forEach(enemy => {
             enemy.draw(ctx);
             enemy.update(deltaTime);
-        })
+        });
+        enemies = enemies.filter(enemy => enemy.markedForDeletion = false)
     }
 
     function displayStatusText() {
@@ -173,7 +198,7 @@ window.addEventListener('load', function(){
         background.draw(ctx);
         // background.update();
         player.draw(ctx);
-        player.update(input);
+        player.update(input, deltatTime);
         // enemy1.draw(ctx);
         // enemy1.update();
         handleEnemies(deltatTime);
