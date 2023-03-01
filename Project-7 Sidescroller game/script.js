@@ -12,6 +12,7 @@ window.addEventListener('load', function(){
         // apply eventListeners to the game
         constructor(){
             this.keys = [];
+            this.touchY = ''; // starting vertical co-ordinate of touch
             window.addEventListener('keydown', e =>{
         // ES6 arrow function dont bind their own 'this' but they
         // inherit the one from their parent scope, this is called lexical scoping
@@ -21,7 +22,8 @@ window.addEventListener('load', function(){
                         e.key === 'ArrowRight') 
                         && this.keys.indexOf(e.key) === -1) {
                     this.keys.push(e.key);
-                }
+                } else if (e.key === 'Enter' && gameOver) restartGame();
+                // if Enter key pressed game restarts
                 // console.log(e.key, this.keys);
             });
             window.addEventListener('keyup', e =>{
@@ -35,6 +37,16 @@ window.addEventListener('load', function(){
                         }
                         // console.log(e.key, this.keys);
                     });
+            window.addEventListener('touchstart', e =>{
+                console.log(e.changedTouches[0].pageY);
+
+            });
+            window.addEventListener('touchmove', e =>{
+                console.log(e.changedTouches[0].pageY);
+            });
+            window.addEventListener('touchend', e =>{
+                console.log(e.changedTouches[0].pageY);
+            });
         }
     }
 
@@ -45,7 +57,7 @@ window.addEventListener('load', function(){
             this.gameHeight = gameHeight;
             this.width = 200; // spriteWidth
             this.height = 200;
-            this.x = 0;
+            this.x = 100;
             this.y = this.gameHeight - this.height;
             this.image = document.getElementById("playerImage");
             this.frameX = 0;
@@ -57,6 +69,13 @@ window.addEventListener('load', function(){
             this.fps = 20; // how fast we cycle frames in the spriteSheet
             this.frameTimer = 0;
             this.frameInterval = 1000/this.fps; // time till each frame lasts
+        }
+        restart(){
+            // initialize player to original starting position
+            this.x = 100;
+            this.y = this.gameHeight - this.height;
+            this.maxFrame = 8;
+            this.frameY = 0;
         }
         draw(context){
             // context.strokeStyle='white';
@@ -136,6 +155,9 @@ window.addEventListener('load', function(){
             this.height = 720;
             this.speed = 10;
         }
+        restart(){
+            this.x = 0;
+        }
         draw(context){
             context.drawImage(this.image, this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.x + this.width - this.speed, this.y, this.width, this.height);
@@ -210,6 +232,7 @@ window.addEventListener('load', function(){
     }
 
     function displayStatusText(context) {
+        context.textAlign = 'left';
         context.fillStyle = 'black';
         context.font = '40px Helvetica';
         // fillText() - text we want to draw +x and y co-ordinates
@@ -221,11 +244,20 @@ window.addEventListener('load', function(){
             context.textAlign = 'center';
             context.fillStyle = 'black';
             // context.font = '40px Helvetica';
-            context.fillText('GAME OVER, try again! ', canvas.width/2, canvas.height/2);
+            context.fillText('GAME OVER, press Enter to restart ', canvas.width/2, canvas.height/2);
             context.fillStyle = 'white';
             // context.font = '40px Helvetica';
-            context.fillText('GAME OVER, try again! ', canvas.width/2 + 2, canvas.height/2);
+            context.fillText('GAME OVER, press Enter to restart ', canvas.width/2 + 2, canvas.height/2);
         }
+    }
+
+    function restartGame(){
+        player.restart();
+        background.restart();
+        enemies = [];
+        score = 0;
+        gameOver = false;
+        animate(0);
     }
 
     const input = new InputHandler();
