@@ -12,7 +12,7 @@ class State {
 
 export class StandingLeft extends State {
     constructor(player) {
-        super('STANDING_LEFT');
+        super('STANDING_LEFT');   // changing value of state in parent from child class
         this.player = player;
     }
     enter() {
