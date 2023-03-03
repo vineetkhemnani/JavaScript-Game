@@ -18,11 +18,19 @@ export default class Player {
         this.frameY = 0;
         this.maxFrame = 6; //default is standing animation so no of default maxFrame = 6
         this.speed = 0;
-        this.maxSpeed =10;
+        this.maxSpeed = 10; // horizontal movement speed
+        this.fps = 30;
+        this.frameTimer = 0; // accumulate deltaTime value
+        this.frameInterval = 1000/this.fps; // milliseconds we want each frame to be displayed for before switching to the next one
     }
-    draw(context){
-        if (this.frameX < this.maxFrame) this.frameX++;
-        else this.frameX = 0;
+    draw(context, deltaTime){
+        if (this.frameTimer > this.frameInterval) {
+            if (this.frameX < this.maxFrame) this.frameX++;
+            else this.frameX = 0;
+            this.frameTimer = 0;
+        } else {
+            this.frameTimer += deltaTime;
+        }
         // context.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
         context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
     }
