@@ -25,6 +25,7 @@ window.addEventListener('load', function(){
             this.enemyTimer = 0;
             this.enemyInterval = 1000;
             this.particles = [];
+            this.maxParticles = 100;
             this.debug = true;
             this.score = 0;
             this.fontColor = 'black';
@@ -50,7 +51,10 @@ window.addEventListener('load', function(){
                 particle.update();
                 if(particle.markedForDeletion) this.particles.splice(index, 1);
             });
-            // console.log(this.particles);
+            if(this.particles.length > this.maxParticles) {
+                this.particles = this.particles.slice(0, this.maxParticles);
+            }
+            console.log(this.particles);
         }
         draw(context){
             this.background.draw(context);
