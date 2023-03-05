@@ -5,7 +5,7 @@ export default class Player{
         this.width = 100;
         this.height = 91.3;
         this.x = 0;
-        this.y = this.game.height - this.height - 10;
+        this.y = this.game.height - this.height - this.game.groundMargin;
         this.vy = 0;
         this.image = document.getElementById('player');
         this.frameX = 0;
@@ -49,7 +49,7 @@ export default class Player{
         context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height,this.x, this.y ,this.width, this.height);
     }
     onGround(){
-        return this.y >= this.game.height - this.height;
+        return this.y >= this.game.height - this.height - this.game.groundMargin;
     }
     setState(state){
         this.currentState = this.states[state];
