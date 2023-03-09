@@ -4,17 +4,29 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <title>Document</title>
 </head>
 <body>
-    <canvas id = "canvas1"></canvas>
-    <img id="playerImage" src="./resources/player.png" >
-    <img id="backgroundImage" src="./resources/background_single.png" >
-    <img id="enemyImage" src="./resources/enemy_1.png">
-    <button id="fullScreenButton"> Toggle fullScreen</button>
+    <canvas id="canvas1"></canvas>
 
-    <script src="script.js"></script>
+    <img src="./assets/player.png" id="player">
+    <img src="./backgrounds/layer-1.png" id="layer1">
+    <img src="./backgrounds/layer-2.png" id="layer2">
+    <img src="./backgrounds/layer-3.png" id="layer3">
+    <img src="./backgrounds/layer-4.png" id="layer4">
+    <img src="./backgrounds/layer-5.png" id="layer5">
+    <img src="./enemies/enemy_fly.png" id="enemy_fly">
+    <img src="./enemies/enemy_plant.png" id="enemy_plant">
+    <img src="./enemies/enemy_spider_big.png" id="enemy_spider_big">
+    <img src="./effects/fire.png" id="fire">
+    <img src="./effects/boom.png" id="boom">
+    <img src="./assets/lives.png" id="lives">
+
+    <script type="module" src="main.js"></script>
     
 </body>
 </html>
